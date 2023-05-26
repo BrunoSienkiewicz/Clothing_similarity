@@ -3,16 +3,11 @@ import io
 import os
 import pandas as pd
 import numpy as np
-import matplotlib.image  as mpimg
-import matplotlib.pyplot as plt
 from keras.preprocessing.image import image_utils
 from datasets import Dataset
 from datasets import Features, ClassLabel, Array3D
 from transformers import ViTFeatureExtractor
 import random
-
-# Gloabl variables
-top_labels_list = []
 
 
 def load_data():
@@ -28,10 +23,13 @@ def label_data(df : pd.DataFrame):
     top_labels = pd.DataFrame(df.groupby('label').size().reset_index().sort_values(0,ascending = False)[:11]['label'])
     top_labels = top_labels[top_labels.label!='Not sure']
 
-    global top_labels_list
     top_labels_list = sorted(list(top_labels['label']))
     top_labels['label_num'] = top_labels['label'].apply(lambda x: top_labels_list.index(x))
 
+    return top_labels, top_labels_list
+
+
+def filter_data(df : pd.DataFrame, top_labels : pd.DataFrame):
     data_filtered = pd.merge(df.reset_index(), top_labels).set_index('image')
     data_filtered['label_str'] = data_filtered['label']
     data_filtered['label'] = data_filtered['label_num']
@@ -94,7 +92,7 @@ def split_data(data_filtered : pd.DataFrame, labeled_data : list):
     return train_img, val_img, test_img, train_label, val_label, test_label, test_ids
 
 
-def preprocess_images(train_img : list, val_img : list, test_img : list, train_label : list, val_label : list, test_label : list):
+def preprocess_images(top_labels_list : list, train_img : list, val_img : list, test_img : list, train_label : list, val_label : list, test_label : list):
     train_ds = Dataset.from_dict({'img':train_img,'label':train_label})
     val_ds = Dataset.from_dict({'img':val_img,'label':val_label})
     test_ds = Dataset.from_dict({'img':test_img,'label':test_label})
@@ -128,5 +126,13 @@ def preprocess_images(train_img : list, val_img : list, test_img : list, train_l
 def main():
     df = load_data()
     print(df.head())
+    top_labels, top_labels_list = label_data(df)
+    print(top_labels)
+    data_filtered = filter_data(df, top_labels)
+    print(data_filtered.head())
+    labeled_data = load_images(data_filtered)
+    print(labeled_data[0])
+    train_img, val_img, test_img, train_label, val_label, test_label, test_ids = split_data(data_filtered, labeled_data)
+    print(len(train_img), len(val_img), len(test_img))
 
 main()
