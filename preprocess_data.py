@@ -6,7 +6,7 @@ import numpy as np
 from keras.preprocessing.image import image_utils
 from datasets import Dataset
 from datasets import Features, ClassLabel, Array3D
-from transformers import ViTFeatureExtractor
+from transformers import ViTImageProcessor
 import random
 
 
@@ -20,8 +20,12 @@ def load_data():
 
 
 def label_data(df : pd.DataFrame):
-    top_labels = pd.DataFrame(df.groupby('label').size().reset_index().sort_values(0,ascending = False)[:11]['label'])
+    top_labels = pd.DataFrame(df.groupby('label').size().reset_index().sort_values(0,ascending = False)['label'])
     top_labels = top_labels[top_labels.label!='Not sure']
+    top_labels = top_labels[top_labels.label!='Other']
+    top_labels = top_labels[top_labels.label!='Top']
+    top_labels = top_labels[top_labels.label!='Skip']
+    top_labels = top_labels[top_labels.label!='Undershirt']
 
     top_labels_list = sorted(list(top_labels['label']))
     top_labels['label_num'] = top_labels['label'].apply(lambda x: top_labels_list.index(x))
@@ -93,11 +97,17 @@ def split_data(data_filtered : pd.DataFrame, labeled_data : list):
 
 
 def preprocess_images(top_labels_list : list, train_img : list, val_img : list, test_img : list, train_label : list, val_label : list, test_label : list):
-    train_ds = Dataset.from_dict({'img':train_img,'label':train_label})
-    val_ds = Dataset.from_dict({'img':val_img,'label':val_label})
-    test_ds = Dataset.from_dict({'img':test_img,'label':test_label})
+    train_ds = preprocess_images_list(top_labels_list, train_img, train_label)
+    val_ds = preprocess_images_list(top_labels_list, val_img, val_label)
+    test_ds = preprocess_images_list(top_labels_list, test_img, test_label)
+    
+    return train_ds, val_ds, test_ds
 
-    feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
+
+def preprocess_images_list(top_labels_list : list, list_img : list, list_label : list):
+    ds = Dataset.from_dict({'img':list_img,'label':list_label})
+
+    feature_extractor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224-in21k')
 
     def preprocess(ds):
         images = ds['img']
@@ -116,11 +126,9 @@ def preprocess_images(top_labels_list : list, train_img : list, val_img : list, 
         'pixel_values': Array3D(dtype="float32", shape=(3, 224, 224)),
     })
     
-    train_ds = train_ds.map(preprocess, batched=True, features=features)
-    val_ds = val_ds.map(preprocess, batched=True, features=features)
-    test_ds = test_ds.map(preprocess, batched=True, features=features)
+    ds = ds.map(preprocess, batched=True, features=features)
     
-    return train_ds, val_ds, test_ds
+    return ds
 
 
 def main():
@@ -134,5 +142,9 @@ def main():
     print(labeled_data[0])
     train_img, val_img, test_img, train_label, val_label, test_label, test_ids = split_data(data_filtered, labeled_data)
     print(len(train_img), len(val_img), len(test_img))
+    train_ds, val_ds, test_ds = preprocess_images(top_labels_list, train_img, val_img, test_img, train_label, val_label, test_label)
+    print(train_ds)
+    print(val_ds)
+    print(test_ds)
 
 main()
