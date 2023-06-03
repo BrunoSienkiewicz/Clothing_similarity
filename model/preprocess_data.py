@@ -147,4 +147,5 @@ def main():
     print(val_ds)
     print(test_ds)
 
-main()
+if __name__ == "__main__":
+    main()

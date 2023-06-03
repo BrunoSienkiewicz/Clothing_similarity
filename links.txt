@@ -1,7 +1,0 @@
-https://www.kaggle.com/datasets/agrigorev/clothing-dataset-full
-
-https://huggingface.co/blog/image-similarity
-
-https://towardsdatascience.com/similarity-learning-for-clothing-building-a-web-service-from-scratch-350216830e21
-
-https://github.com/esteininger/vector-search/tree/master
