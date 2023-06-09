@@ -1,5 +1,13 @@
 from pymongo import MongoClient
 import pandas as pd
+import gridfs
+from PIL import Image
+import io
+
+
+def retrieve_and_display_image(db, filename):
+    im = Image.open(io.BytesIO(db.fs.get_last_version(filename).read()))
+    im.show()
 
 
 class Database(object):
@@ -28,6 +36,34 @@ class Database(object):
     
     def load_as_df(self):
         return pd.DataFrame(list(self.collection.find()))
+    
+
+class ImageDatabase(Database):
+    def __init__(self, db=None, collection=None):
+        super().__init__(db, collection)
+        self.fs = gridfs.GridFS(self.db, collection=collection)
+    
+    def insert(self, image, filename):
+        if self.fs.find_one({"filename": filename}):
+            return
+
+        with open(image, "rb") as f:
+            self.fs.put(f, filename=filename)
+
+    def insert_binary(self, binary, filename):
+        if self.fs.find_one({"filename": filename}):
+            return
+
+        self.fs.put(binary, filename=filename)
+    
+    def find(self, query):
+        return self.collection.find(query)
+    
+    def load_image(self, id):
+        return self.fs.get(id).read()
+    
+    def load_images(self, ids):
+        return [self.load_image(id) for id in ids]
     
 
 def main():

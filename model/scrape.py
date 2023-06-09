@@ -4,9 +4,14 @@ import time
 import datetime as dt
 import pandas as pd
 from bs4 import BeautifulSoup
-from seleniumwire import webdriver
+from seleniumwire import webdriver as wiredriver
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from keras.preprocessing.image import image_utils
+
+from database import Database, ImageDatabase
 
 
 chrome_options = Options()
@@ -77,46 +82,56 @@ def create_dataset(imgs : dict):
     columns = ["Image", "Label", "link", "date_added"]
     df = pd.DataFrame(columns=columns)
     for img in imgs.items():
-        df = df.append({"Image": img[0], "Label": img[1][1], "link": img[1][2], "date_added": dt.datetime.isoformat(dt.datetime.now())}, ignore_index=True)
+        try:
+            series = pd.Series([img[0], img[1][1], img[1][2], dt.datetime.isoformat(dt.datetime.now())], index=columns)
+        except IndexError:
+            continue
+        df = pd.concat([df, series.to_frame().T], ignore_index=True)
     return df
 
 
-def insert_into_database(df : pd.DataFrame, database):
+def insert_dataset(imgs, images_info, images_binaries):
+    df = create_dataset(imgs)
     for index, row in df.iterrows():
-        database.insert({"Image": row["Image"], "Label": row["Label"], "link": row["link"], "date_added": row["date_added"]})
+        images_info.insert(row.to_dict())
+        if (imgs[row["Image"]][0][0] != 82):
+            continue
+        images_binaries.insert_binary(imgs[row["Image"]][0], f"{row['Image']}.jpg")
 
 
 def scrape_images(categories=GRAILED_CATEGORIES):
-    driver = webdriver.Chrome(options=chrome_options)
+    wdriver = wiredriver.Chrome(options=chrome_options)
     for category in categories:
         url = GRAILED_BASE_URL + category
-        request_list = get_requests(url, driver, scroll_times=1)
+        request_list = get_requests(url, wdriver, scroll_times=2)
         imgs = {}
         for request in request_list:
             if request.url.startswith("https://process.fs.grailed.com"):
                 imgs[request.path[-20:]] = [request.response.body]
                 imgs[request.path[-20:]].append(CATEGORIES_TO_LABELS[category])
-                imgs[request.path[-20:]].append("https://www.grailed.com" + request.path[:-20])
-        for img in imgs.items():
-            category_dir = "images/" + CATEGORIES_TO_LABELS[category] + "/"
-            os.makedirs(category_dir, exist_ok=True)
-            
-            filename = img[0] + ".jpg"
-            filepath = os.path.join(category_dir, filename)
-            with open(filepath, "wb+") as f:
-                try:
-                    f.write(img[1][0])
-                except:
-                    pass
-        soup = BeautifulSoup(driver.page_source, "lxml")
-        soup_imgs = soup.findAll("div", {"class": "feed-item"})
-        pass
-    driver.quit()
+
+        # driver = webdriver.Chrome(options=chrome_options)
+        # driver.get(url)
+        WebDriverWait(wdriver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'img')))
+        page_content = wdriver.page_source
+        soup = BeautifulSoup(page_content, "lxml")
+        images = soup.find_all("img")
+
+        img_to_link = {}
+        for image in images:
+            img_to_link[image["src"][-20:]] = image['alt']
+
+        for img_to_link_key in img_to_link.keys():
+            if img_to_link_key in imgs.keys():
+                imgs[img_to_link_key].append(img_to_link[img_to_link_key])
+
+        insert_dataset(imgs, Database("Images", "images_info"), ImageDatabase("Images", "images_binaries"))
+    wdriver.quit()
     return imgs
 
 
 def main():
-    imgs = scrape_images()
+    imgs = scrape_images(["sweatshirts-hoodies"])
     df = create_dataset(imgs)
     pass
 
