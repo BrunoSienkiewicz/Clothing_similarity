@@ -59,11 +59,11 @@ class ImageDatabase(Database):
     def find(self, query):
         return self.collection.find(query)
     
-    def load_image(self, id):
-        return self.fs.get(id).read()
+    def load_image(self, filename):
+        return io.BytesIO(self.fs.get_last_version(filename).read())
     
-    def load_images(self, ids):
-        return [self.load_image(id) for id in ids]
+    def load_images(self, filenames):
+        return [self.load_image(filename) for filename in filenames]
     
 
 def main():

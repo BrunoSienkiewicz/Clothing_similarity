@@ -33,6 +33,20 @@ def label_data(df : pd.DataFrame):
     return top_labels, top_labels_list
 
 
+def label_data_from_database(df : pd.DataFrame):
+    top_labels = pd.DataFrame(df.groupby('Label').size().reset_index().sort_values(0,ascending = False)['Label'])
+    top_labels = top_labels[top_labels.Label!='Not sure']
+    top_labels = top_labels[top_labels.Label!='Other']
+    top_labels = top_labels[top_labels.Label!='Top']
+    top_labels = top_labels[top_labels.Label!='Skip']
+    top_labels = top_labels[top_labels.Label!='Undershirt']
+    
+    top_labels_list = sorted(list(top_labels['Label']))
+    top_labels['label_num'] = top_labels['Label'].apply(lambda x: top_labels_list.index(x))
+
+    return top_labels, top_labels_list
+
+
 def filter_data(df : pd.DataFrame, top_labels : pd.DataFrame):
     data_filtered = pd.merge(df.reset_index(), top_labels).set_index('image')
     data_filtered['label_str'] = data_filtered['label']
@@ -54,6 +68,28 @@ def load_images(data_filtered : pd.DataFrame):
         try:
             label = data_filtered.loc[item[:-4],'label']
             labeled_data.append({'img':images, 'label':label, 'index':item[:-4]})
+        except:
+            label = 'no_data'
+
+    return labeled_data
+
+
+def load_images_from_database(images_info, images_binaries):
+    labeled_data = []
+    df = images_info.load_as_df()
+    for i, item in enumerate(df["Image"].tolist()):
+        try:
+            img = image_utils.load_img(images_binaries.load_image(item+".jpg"), target_size=(32, 32))
+        except:
+            continue
+        
+        x = image_utils.img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        images = np.vstack([x])[0].tolist()
+
+        try:
+            label = df.loc[df["Image"] == item, 'Label']
+            labeled_data.append({'img':images, 'label':label, 'index':item})
         except:
             label = 'no_data'
 
@@ -93,6 +129,42 @@ def split_data(data_filtered : pd.DataFrame, labeled_data : list):
             test_label.append(img['label'])
             test_ids.append(img['index'])
 
+    return train_img, val_img, test_img, train_label, val_label, test_label, test_ids
+
+
+def split_data_from_database(df : pd.DataFrame, labeled_data : list):
+    imgs = df["Image"].tolist()
+    random.shuffle(imgs)
+
+    n = len(df)
+    p_train = 0.6
+    p_val = 0.2
+    n_train = int(p_train*n)
+    n_val = int(p_val*n)
+    train_ind = imgs[:n_train]
+    val_ind = imgs[n_train:(n_train+n_val)]
+    test_ind = imgs[(n_train+n_val):]
+
+    train_img = []
+    val_img = []
+    test_img = []
+    train_label = []
+    val_label = []
+    test_label = []
+    test_ids = []
+
+    for img in labeled_data:
+        if img['index'] in train_ind:
+            train_img.append(img['img'])
+            train_label.append(img['label'])
+        elif img['index'] in val_ind:
+            val_img.append(img['img'])
+            val_label.append(img['label'])
+        elif img['index'] in test_ind:
+            test_img.append(img['img'])
+            test_label.append(img['label'])
+            test_ids.append(img['index'])
+    
     return train_img, val_img, test_img, train_label, val_label, test_label, test_ids
 
 
