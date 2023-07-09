@@ -125,7 +125,6 @@ def scrape_images(categories=GRAILED_CATEGORIES):
             if img_to_link_key in imgs.keys():
                 imgs[img_to_link_key].append(img_to_link[img_to_link_key])
 
-        insert_dataset(imgs, Database("Images", "images_info"), ImageDatabase("Images", "images_binaries"))
     wdriver.quit()
     return imgs
 
