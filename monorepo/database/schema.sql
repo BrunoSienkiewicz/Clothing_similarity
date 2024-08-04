@@ -1,4 +1,3 @@
-
 CREATE KEYSPACE IF NOT EXISTS items WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1};
 USE items;
 CREATE TABLE items (id bigint, title text, category text, image_link text, listing_link text, ingested_at timestamp, PRIMARY KEY (id)); 
