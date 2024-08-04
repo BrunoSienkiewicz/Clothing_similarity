@@ -3,7 +3,7 @@ version: "3.8"
 services:
   postgres:
     build:
-      context: ./database/
+      context: ./monorepo/database/
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -39,7 +39,7 @@ services:
       AIRFLOW__API__AUTH_BACKEND_BASIC_AUTH_USER: "admin"
       AIRFLOW__API__AUTH_BACKEND_BASIC_AUTH_PASSWORD: "admin"
     volumes:
-      - ./dags:/opt/airflow/dags
+      - ./monorepo/airflow/dags:/opt/airflow/dags
     ports:
       - "8080:8080"
     depends_on:
