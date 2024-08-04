@@ -1,18 +1,49 @@
-version: '3'
-services:
-  mongodb:
-    image: mongo:6-jammy
-    ports:
-      - '27017:27017'
-    volumes:
-      - mongo_data:/data/db
+version: "3.8"
 
-  python_model:
+services:
+  postgres:
     build:
-      context: .
-      dockerfile: Dockerfile.model
+      context: ./database/
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
     volumes:
-      - ./model:/model
+      - postgres_data:/var/lib/postgresql/data
+    command: >
+      bash -c "exec postgres -D /var/lib/postgresql/data &
+               sleep 10 &&
+               psql -U ${POSTGRES_USER} -d ${POSTGRES_PASSWORD} -c 'CREATE EXTENSION IF NOT EXISTS vector;' &&
+               fg"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  airflow:
+    image: apache/airflow:2.5.0
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: $(openssl rand -base64 32)
+      AIRFLOW__CORE__LOAD_EXAMPLES: "true"
+      AIRFLOW__API__AUTH_BACKEND: "airflow.api.auth.backend.basic_auth"
+      AIRFLOW__API__AUTH_BACKEND_BASIC_AUTH_USER: "admin"
+      AIRFLOW__API__AUTH_BACKEND_BASIC_AUTH_PASSWORD: "admin"
+    volumes:
+      - ./dags:/opt/airflow/dags
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
 
 volumes:
-  mongo_data:
+  postgres_data:
