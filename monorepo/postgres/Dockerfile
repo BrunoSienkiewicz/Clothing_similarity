@@ -16,6 +16,4 @@ RUN apt-get remove -y \
     rm -rf /var/lib/apt/lists/* pgvector
 
 COPY schema.sql /docker-entrypoint-initdb.d/schema.sql;
-COPY init-airflow-db.sh /docker-entrypoint-initdb.d/
-RUN chmod +x /docker-entrypoint-initdb.d/init-airflow-db.sh
 
