@@ -47,20 +47,20 @@ def bfsoup_parse_of_html_and_add_to_df(html_content):
     feed_items = soup.find_all(class_='feed-item')
     for feed_item in feed_items:
         listing_link = feed_item.find('a', class_='listing-item-link')['href']
-        print(listing_link)
+        print(f'{listing_link} - listing link')
         img_tag = feed_item.find('img', class_='Image-module__crop___nWp1j')
-        print(img_tag)
+        print(f'img tabgs {img_tag}')
         img_link = [img_tag['src'], img_tag['srcset']]
-        print(img_link)
+        print(f'img link - {img_link}')
         time_of_scrapping = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         listing_meta_data = feed_item.find('div', class_='ListingMetadata-module__metadata___+RWy0').text.strip()
-        print(listing_meta_data)
+        print(f'{listing_meta_data} - listing meta data ')
         listing_title = feed_item.find('p', class_='ListingMetadata-module__title___Rsj55').text.strip()
-        print(listing_title)
+        print(f"{listing_title} - listing title")
         #listing_price = feed_item.find('span', class_='Money-module__root___jRyq5 Price-module__onSale___1pIHp').text.strip()
-        #print(listing_price)
+        #print(f'{listing_price} - price ')
         see_similar_link = feed_item.find('a', class_='SeeSimilarLink-module__link___tioRk')['href']
-        print(see_similar_link)
+        print(f'{see_similar_link}- see_similar_link')
 
 
 def scrape_html(link, secScroll, categorie):
