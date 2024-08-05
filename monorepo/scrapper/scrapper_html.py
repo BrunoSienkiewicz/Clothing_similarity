@@ -1,3 +1,4 @@
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -45,15 +46,23 @@ def bfsoup_parse_of_html_and_add_to_df(html_content):
     #print(soup.prettify())
     feed_items = soup.find_all(class_='feed-item')
     for feed_item in feed_items:
-        print(feed_item)
-        listing_link = feed_item.find('a', class_='listing-item-link')
-        for links in listing_link:
-            print(links.get('href'))
-        listing_link = listing_link.get('href')
-        see_similat_link = feed_item.find('a', target='_blank')
-        see_similat_link = see_similat_link.get('href')
+        listing_link = feed_item.find('a', class_='listing-item-link')['href']
         print(listing_link)
-        print(see_similat_link)
+        img_tag = feed_item.find('img', class_='Image-module__crop___nWp1j')
+        print(img_tag)
+        img_link = [img_tag['src'], img_tag['srcset']]
+        print(img_link)
+        time_of_scrapping = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        listing_meta_data = feed_item.find('div', class_='ListingMetadata-module__metadata___+RWy0').text.strip()
+        print(listing_meta_data)
+        listing_title = feed_item.find('p', class_='ListingMetadata-module__title___Rsj55').text.strip()
+        print(listing_title)
+        #listing_price = feed_item.find('span', class_='Money-module__root___jRyq5 Price-module__onSale___1pIHp').text.strip()
+        #print(listing_price)
+        see_similar_link = feed_item.find('a', class_='SeeSimilarLink-module__link___tioRk')['href']
+        print(see_similar_link)
+
+
 def scrape_html(link, secScroll, categorie):
     cookies_reject_all_id = 'onetrust-reject-all-handler'
     login_widget_xpath = '/html/body/div[9]/div/div/div/div[2]/div'
