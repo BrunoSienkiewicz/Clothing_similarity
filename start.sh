@@ -17,3 +17,5 @@ if [ $# -gt 0 ]; then
 else
     exec $dc run --rm airflow-cli
 fi
+
+# TODO: add compose up with multiple files
