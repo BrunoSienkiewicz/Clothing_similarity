@@ -1,7 +1,6 @@
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FireOptions
 from bs4 import BeautifulSoup
@@ -10,6 +9,7 @@ import argparse
 import threading
 import json
 import os
+import re
 
 GRAILED_BASE_URL = "https://www.grailed.com/categories/"
 
@@ -40,7 +40,7 @@ def bfsoup_parse_of_html_and_add_to_df(html_content):
             saved_links = {}
             iteration += 1
             saved_links['listing_link'] = GRAILED_HOME_URL + feed_item.find('a', class_='listing-item-link')['href']
-            saved_links['img_link'] = feed_item.find('img', class_='Image-module__crop___nWp1j')['src']
+            saved_links['img_link'] = re.sub(r'\?.*$', '', feed_item.find('img', class_='Image-module__crop___nWp1j')['src'])
             saved_links['similar_link'] = GRAILED_BASE_URL + feed_item.find('a', class_='SeeSimilarLink-module__link___tioRk')['href']
             saved_links['time_of_scrapping'] = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
             save_to_json_file(saved_links, iteration)
