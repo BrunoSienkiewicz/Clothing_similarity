@@ -1,36 +1,33 @@
-from datetime import datetime
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FireOptions
-from bs4 import BeautifulSoup
 import time
 import argparse
 import threading
 import json
 import os
 import re
+from datetime import datetime
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options as FireOptions
+from bs4 import BeautifulSoup
 
 GRAILED_BASE_URL = "https://www.grailed.com/categories/"
 
-def init_of_driver(url):
-    #options = ChromeOptions()
+def init_driver(url):
     options = FireOptions()
     options.add_argument('--disable-logging')
     options.add_argument("--headless")
     options.add_argument("--log-level=3")
     driver = webdriver.Firefox(options)
-    #driver = webdriver.Chrome(options=options)
     driver.get(url)
     return driver
 
-def scroll_for_set_amout_of_sec(driver, secScroll, timeout=0.1):
-    end_time = time.time() + secScroll
+def scroll_for_set_amout_of_sec(driver, scroll_time, timeout=0.1):
+    end_time = time.time() + scroll_time
     while time.time() < end_time:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(timeout)
 
-def bfsoup_parse_of_html_and_add_to_df(html_content):
+def parse_html(html_content):
     GRAILED_HOME_URL = "https://www.grailed.com"
     soup = BeautifulSoup(html_content, 'html.parser')
     feed_items = soup.find_all(class_='feed-item')
@@ -58,11 +55,11 @@ def save_to_json_file(saved_links, iteration):
 
 def scrape_html(link, secScroll, categorie):
     url = link + categorie
-    driver = init_of_driver(url)
+    driver = init_driver(url)
     scroll_for_set_amout_of_sec(driver, secScroll)
     parent_element = driver.find_element(By.CLASS_NAME, "feed")
     html_content = parent_element.get_attribute('outerHTML')
-    bfsoup_parse_of_html_and_add_to_df(html_content)
+    parse_html(html_content)
 
 def scrape_main_func(link, secScroll, categories):
     if link is None:
@@ -82,7 +79,7 @@ def scrape_main_func(link, secScroll, categories):
     for thread in threads:
         thread.join()
 
-def scrappe_site():
+def scrape_site():
     parser = argparse.ArgumentParser(description="A simple script to demonstrate argparse.")
     parser.add_argument('-link', '--link', type=str, required=False, help='a link to site defoult https://www.grailed.com/categories ')
     parser.add_argument('-secScroll', '--secScroll', type=int, required=False, help='how long to scroll')
@@ -91,4 +88,4 @@ def scrappe_site():
     scrape_main_func(args.link, args.secScroll, args.categories)
 
 if __name__ == "__main__":
-    scrappe_site()
+    scrape_site()
