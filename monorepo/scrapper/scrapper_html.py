@@ -2,7 +2,8 @@ from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FireOptions
 from bs4 import BeautifulSoup
 import time
 import argparse
@@ -13,11 +14,13 @@ import os
 GRAILED_BASE_URL = "https://www.grailed.com/categories/"
 
 def init_of_driver(url):
-    chrome_options = Options()
-    chrome_options.add_argument('--disable-logging')
-    #chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--log-level=3")
-    driver = webdriver.Chrome(options=chrome_options)
+    #options = ChromeOptions()
+    options = FireOptions()
+    options.add_argument('--disable-logging')
+    options.add_argument("--headless")
+    options.add_argument("--log-level=3")
+    driver = webdriver.Firefox(options)
+    #driver = webdriver.Chrome(options=options)
     driver.get(url)
     return driver
 
