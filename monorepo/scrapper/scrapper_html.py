@@ -43,7 +43,6 @@ def bfsoup_parse_of_html_and_add_to_df(html_content):
             saved_links['img_link'] = feed_item.find('img', class_='Image-module__crop___nWp1j')['src']
             saved_links['similar_link'] = GRAILED_BASE_URL + feed_item.find('a', class_='SeeSimilarLink-module__link___tioRk')['href']
             saved_links['time_of_scrapping'] = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-            print(saved_links)
             save_to_json_file(saved_links, iteration)
         except TypeError:
             break
