@@ -1,5 +1,10 @@
 version: "3"
 
+networks:
+  kafka-net:
+    driver: bridge
+    external: false
+
 services:
   zookeeper:
     image: wurstmeister/zookeeper
@@ -19,10 +24,6 @@ services:
       KAFKA_LISTENERS: INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9093
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CREATE_TOPICS: "baeldung:1:1"
+      KAFKA_CREATE_TOPICS: "test_topic:1:1"
     networks:
       - kafka-net
-
-networks:
-  kafka-net:
-    driver: bridge

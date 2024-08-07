@@ -24,6 +24,13 @@ x-airflow-common: &airflow-common
     postgres:
       condition: service_healthy
 
+networks:
+  airflow-net:
+    driver: bridge
+    external: false
+  kafka-net:
+    external: true
+
 services:
   postgres:
     image: postgres:13
