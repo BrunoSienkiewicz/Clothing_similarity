@@ -75,7 +75,7 @@ def scrape_main_func(link, sec_scroll,timeout, categories):
 def scrape_site():
     parser = argparse.ArgumentParser(description="A simple script to demonstrate argparse.")
     parser.add_argument('-link', '--link', type=str, required=False, help='a link to site defoult https://www.grailed.com/categories ')
-    parser.add_argument('-sec_scroll', '--sec_scroll', type=int, required=False, help='how long to scroll')
+    parser.add_argument('-sec_scroll', '--secScroll', type=int, required=False, help='how long to scroll')
     parser.add_argument('-timeout', '--timeout', type=int, required=False, help='how long to timeout scroll')
     parser.add_argument('-categories', '--categories', type=str, required=False, help='pick categories you want to scrape from ')
     args = parser.parse_args()
