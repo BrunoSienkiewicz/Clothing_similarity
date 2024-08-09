@@ -1,6 +1,5 @@
 import time
 import argparse
-import threading
 import json
 import os
 import re
