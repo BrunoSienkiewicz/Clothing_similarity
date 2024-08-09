@@ -9,7 +9,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FireOptions
 from bs4 import BeautifulSoup
-
+#from webdriver_manager.firefox import GeckoDriverManager
+#pip install webdriver-manager
 GRAILED_BASE_URL = "https://www.grailed.com/categories/"
 GRAILED_HOME_URL = "https://www.grailed.com"
 
@@ -18,7 +19,8 @@ def init_driver(url):
     options.add_argument('--disable-logging')
     options.add_argument("--headless")
     options.add_argument("--log-level=3")
-    driver = webdriver.Firefox(options)
+    #driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options)
+    driver = webdriver.Firefox(options=options)
     driver.get(url)
     return driver
 
