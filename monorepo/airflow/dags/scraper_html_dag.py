@@ -1,8 +1,8 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
-from kafka import KafkaConsumer
-from scripts.scrapper_html import scrape_site
+from kafka import KafkaProducer
+from scripts.scrapper_html import scrape_html
 
 default_args = {
     'owner': 'airflow',
@@ -13,25 +13,29 @@ default_args = {
 }
 
 dag = DAG(
-    'kafka_consumer_dag',
+    'kafka_producer_dag',
     default_args=default_args,
-    description='A simple Kafka consumer DAG',
-    schedule_interval='*/10 * * * * *',
+    description='A simple Kafka producer DAG',
+    schedule_interval='*/5 * * * * *',  
     catchup=False,
     max_active_runs=1
 )
 
-def consume_message():
-    consumer = KafkaConsumer('test_topic', bootstrap_servers='kafka:9092')
-    for message in consumer:
-        print(f"Received message: {message.value.decode('utf-8')}")
-        break  # Consume one message and exit
-    consumer.close()
+def send_json_one_by_one():
+    json_array = scrape_html()
+    for json in json_array:
+        send_message(json)
 
-consume_message_task = PythonOperator(
-    task_id='consume_message',
-    python_callable=consume_message,
+def send_message(json):
+    producer = KafkaProducer(bootstrap_servers='kafka:9092')
+    producer.send('test_topic', json)
+    producer.flush()
+    producer.close()
+
+send_message_task = PythonOperator(
+    task_id='send_json_one_by_one',
+    python_callable=send_json_one_by_one,
     dag=dag,
 )
 
-scrape_site()
+send_json_one_by_one
