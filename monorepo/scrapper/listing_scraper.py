@@ -6,17 +6,17 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options as FireOptions
 from selenium.webdriver.common.by import By
 
 
 def init_driver(url):
-    options = Options()
+    options = FireOptions()
     options.add_argument('--disable-logging')
-    #options.add_argument('--headless')
+    options.add_argument('--headless')
     options.add_argument("--log-level=3")
 
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Firefox(options=options)
     driver.get(url)
     return driver
 
@@ -55,7 +55,6 @@ def save_image(img_link, save_time, folder_path):
         image_path = os.path.join(folder_path, filename)
         with open(image_path, 'wb') as f:
             f.write(response.content)
-            print(f'Saved image to {image_path}')
     else:
         print(f'Failed to save image. {response.status_code}')
 
@@ -73,7 +72,7 @@ def scrape_html(url):
     driver = init_driver(url)
     parent_element = driver.find_element(By.CLASS_NAME, 'MainContent_sidebar__29G6s')
     html_content = parent_element.get_attribute('outerHTML')
-    driver.close()
+    driver.quit()
     return parse_html(html_content)
 
 def get_listing():
