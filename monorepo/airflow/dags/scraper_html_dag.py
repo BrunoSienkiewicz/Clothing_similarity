@@ -1,8 +1,9 @@
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 from kafka import KafkaProducer
 from scripts.scrapper_html import scrape_html
+import json
 
 default_args = {
     'owner': 'airflow',
@@ -13,22 +14,22 @@ default_args = {
 }
 
 dag = DAG(
-    'kafka_producer_dag',
+    'scrapper_html_part_dag',
     default_args=default_args,
-    description='A simple Kafka producer DAG',
-    schedule_interval='*/5 * * * * *',  
+    description='amogus',
+    schedule_interval='*/15 * * * *',  
     catchup=False,
     max_active_runs=1
 )
 
 def send_json_one_by_one():
     json_array = scrape_html()
-    for json in json_array:
-        send_message(json)
+    for json_var in json_array:
+        send_message(json_var)
 
-def send_message(json):
-    producer = KafkaProducer(bootstrap_servers='kafka:9092')
-    producer.send('test_topic', json)
+def send_message(json_obj):
+    producer = KafkaProducer(bootstrap_servers='kafka:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+    producer.send('test_topic', json_obj)
     producer.flush()
     producer.close()
 
@@ -38,4 +39,4 @@ send_message_task = PythonOperator(
     dag=dag,
 )
 
-send_json_one_by_one
+send_message_task
