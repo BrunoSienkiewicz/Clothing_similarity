@@ -1,0 +1,51 @@
+MODEL:
+  NAME: "ViT"
+  VERSION: "v1"
+  TRAINING_PARAMETERS:
+    learning_rate: 0.001
+    num_train_epochs: 10
+  MODEL_PARAMETERS:
+    num_classes: 20
+    dropout: 0.1
+
+DATASET:
+  TYPE: "ZipImageDataset"
+  TRAIN_SPLIT: 0.8
+  ARGS:
+    zip_path: "./archive.zip"
+    batch_size: 32
+    labels:
+      [
+        "Skip",
+        "Other",
+        "Polo",
+        "Shoes",
+        "T-Shirt",
+        "Skirt",
+        "Longsleeve",
+        "Outwear",
+        "Shorts",
+        "Body",
+        "Pants",
+        "Shirt",
+        "Blazer",
+        "Not sure",
+        "Hoodie",
+        "Blouse",
+        "Dress",
+        "Top",
+        "Undershirt",
+        "Hat",
+      ]
+    transform:
+      - type: "Resize"
+        args:
+          size: 256
+      - type: "CenterCrop"
+        args:
+          size: 224
+      - type: "ToTensor"
+      - type: "Normalize"
+        args:
+          mean: [0.485, 0.456, 0.406]
+          std: [0.229, 0.224, 0.225]

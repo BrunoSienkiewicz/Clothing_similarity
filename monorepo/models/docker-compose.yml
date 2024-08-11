@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  mlflow:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_TRACKING_URI=postgresql://mlflow:mlflow@postgres/mlflow
+      - MLFLOW_ARTIFACT_ROOT=/mlflow/artifacts
+    volumes:
+      - ./mlflow/artifacts:/mlflow/artifacts
