@@ -21,3 +21,15 @@ poetry install
 ### Dataset
 
 The dataset used in this project can be found [here](https://www.kaggle.com/datasets/agrigorev/clothing-dataset-full/data).
+
+## Usage
+
+### Running scripts
+
+You need to activate the virtual environment created by poetry:
+
+```bash
+poetry shell
+```
+
+Then, you should be able to run scripts.
