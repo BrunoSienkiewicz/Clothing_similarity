@@ -10,6 +10,14 @@ from selenium.webdriver.firefox.options import Options as FireOptions
 from selenium.webdriver.common.by import By
 
 
+css_classes = {
+    'headline': 'Headline_headline___qUL5 Text Details_designers__NnQ20',
+    'details_title': 'Body_body__dIg1V Text Details_title__PpX5v',
+    'p_elements': 'Body_body__dIg1V Text Details_detail__J0Uny Details_nonMobile__AObqX',
+    'price': 'Money_root__8lDCT',
+    'tags': 'Hashtags_tags__CwSY4'
+}
+
 def init_driver(url):
     options = FireOptions()
     options.add_argument('--disable-logging')
@@ -25,24 +33,23 @@ def parse_html(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
     parsed_listing = {}
     #parsed_listing['headline'] = soup.find('p', class_='Headline_headline___qUL5 Text Details_designers__NnQ20').text
-    parsed_listing['headline'] = [item.strip() for item in soup.find('p', class_='Headline_headline___qUL5 Text Details_designers__NnQ20').text.split('×') if item.strip()]
-    parsed_listing['details_title'] = soup.find('h1', class_='Body_body__dIg1V Text Details_title__PpX5v').text
+    parsed_listing['headline'] = [item.strip() for item in soup.find('p', class_=css_classes['headline']).text.split('×') if item.strip()]
+    parsed_listing['details_title'] = soup.find('h1', class_=css_classes['details_title']).text
 
-    details_p_elements = soup.find_all('p', class_='Body_body__dIg1V Text Details_detail__J0Uny Details_nonMobile__AObqX')
+    details_p_elements = soup.find_all('p', class_=css_classes['p_elements'])
     parsed_listing['size'] = details_p_elements[0].text[5:]
     parsed_listing['Color'] = details_p_elements[1].text[6:]
     parsed_listing['Condition'] = details_p_elements[2].text[10:]
 
-    parsed_listing['price'] = soup.find('span', class_='Money_root__8lDCT').text
+    parsed_listing['price'] = soup.find('span', class_=css_classes['price']).text
 
-    parsed_listing['tags'] = soup.find('div', class_='Hashtags_tags__CwSY4').text.replace('#', ' #').strip().split(' ')
+    parsed_listing['tags'] = soup.find('div', class_=css_classes['tags']).text.replace('#', ' #').strip().split(' ')
 
     return parsed_listing
 
 
-def save_info(parsed_listing, img_link):
+def save_info(parsed_listing, img_link, folder_path='parsed_json_dataset'):
     save_time = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-    folder_path = 'parsed_json_dataset'
     save_parsed_json(parsed_listing, save_time, folder_path)
     save_image(img_link, save_time, folder_path)
 
