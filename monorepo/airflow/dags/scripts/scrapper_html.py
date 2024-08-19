@@ -87,8 +87,3 @@ def main():
     parser.add_argument('-categories', '--categories', type=str, const='all', required=False, help='pick categories you want to scrape from ')
     args = parser.parse_args()
     main_func_for_users(args.link, args.sec_scroll,args.timeout, args.categories)
-
-if __name__ == "__main__":
-    json = scrape_html()
-    for j in json:
-        print(j)

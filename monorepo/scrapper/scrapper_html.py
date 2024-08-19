@@ -84,5 +84,3 @@ def main():
     args = parser.parse_args()
     main_func_for_users(args.link, args.sec_scroll,args.timeout, args.categories)
 
-if __name__ == "__main__":
-    main()
