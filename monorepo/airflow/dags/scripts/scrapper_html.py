@@ -1,6 +1,5 @@
 import time
 import argparse
-import threading
 import json
 import os
 import re
@@ -8,19 +7,22 @@ from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FireOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from bs4 import BeautifulSoup
-#from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 #pip install webdriver-manager
 GRAILED_BASE_URL = "https://www.grailed.com/categories/"
 GRAILED_HOME_URL = "https://www.grailed.com"
+token = '' #token z mojego drugiego konta githubowego ez ez
+os.environ['GH_TOKEN'] = token
 
 def init_driver(url):
     options = FireOptions()
     options.add_argument('--disable-logging')
     options.add_argument("--headless")
     options.add_argument("--log-level=3")
-    #driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options)
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options,)
+    #driver = webdriver.Firefox(options=options)
     driver.get(url)
     return driver
 
@@ -51,7 +53,7 @@ def parse_html(html_content):
 
 
 def save_to_json_file(saved_links):
-    return json.dump(saved_links, indent=4)
+    return json.dumps(saved_links, indent=4)
 
 def save_to_folder(json_file, filename, folder_name='json_dataset'):
     if not os.path.exists(folder_name):
@@ -85,6 +87,3 @@ def main():
     parser.add_argument('-categories', '--categories', type=str, const='all', required=False, help='pick categories you want to scrape from ')
     args = parser.parse_args()
     main_func_for_users(args.link, args.sec_scroll,args.timeout, args.categories)
-
-if __name__ == "__main__":
-    main()
