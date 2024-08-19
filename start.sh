@@ -30,7 +30,7 @@ else
     dc="docker compose"
 fi
 
-export AIRFLOW_IMAGE_NAME='clothing_similarity-airflow'
+export AIRFLOW_IMAGE_NAME="${PROJECT_NAME}-airflow"
 export AIRFLOW_PROJ_DIR="${PROJECT_DIR}/monorepo/airflow"
 export AIRFLOW_COMPOSE_FILE="${AIRFLOW_PROJ_DIR}/docker-compose.yml"
 
